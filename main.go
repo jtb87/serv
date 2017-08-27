@@ -1,25 +1,36 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gorilla-mux"
+	_ "fmt"
+	_ "github.com/jtb87/config"
+	"log"
 	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/hello", helloWorld)    // set router
-	http.HandleFunc("/", helloHome)          // set router
-	err := http.ListenAndServe(":9090", nil) // set listen port
-	if err != nil {
-		fmt.Println("ListenAndServe: ", err)
-	}
+	app := App{}
+	app.Init("test_db", "test", "inject")
+	app.NewRouter() // conf, err := config.LoadConfiguration("config.json")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// Open_db()
+	log.Fatal(http.ListenAndServe(":9090", app.Router))
+
 }
 
-func helloWorld(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("logged yes")
-	fmt.Fprintf(w, "Hello, world!")
-}
+// https://thenewstack.io/make-a-restful-json-api-go/
+// https://www.thepolyglotdeveloper.com/2016/12/create-real-time-chat-app-golang-angular-2-websockets/
 
-func helloHome(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, Home, seems to be working no?!")
-}
+// func Open_db() {
+// 	app := App{}
+// 	db, err := sqlx.Open("mysql", "test_db:test@(localhost:3306)")
+// 	if err != nil {
+// 		log.Panic(err)
+// 	}
+// 	err = db.Ping()
+// 	if err != nil {
+// 		log.Panic(err)
+// 	}
+// 	log.Print(app)
+// }
