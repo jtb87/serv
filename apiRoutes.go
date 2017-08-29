@@ -21,8 +21,8 @@ var routes = Routes{
 		Index,
 	},
 	Route{
-		"HelloWorld",
+		"User",
 		"GET",
-		"/hello",
-		HelloWorld,
+		"/user",
+		UserHandler,
 	}}

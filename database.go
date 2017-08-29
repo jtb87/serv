@@ -21,13 +21,16 @@ type App struct {
 	Router *mux.Router
 }
 
-//https://semaphoreci.com/community/tutorials/building-and-testing-a-rest-api-in-go-with-gorilla-mux-and-postgresql
 func (a *App) Init(user, password, dbname string) {
-	connectionString :=
-		fmt.Sprintf("user=%s password=%s dbname=%s", user, password, dbname)
+	connectionString := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", user, password, dbname)
 	var err error
 	a.DB, err = sqlx.Open("mysql", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = a.DB.Ping()
+	if err != nil {
+		log.Print(err)
+	}
+	a.NewRouter()
 }
