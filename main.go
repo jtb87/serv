@@ -1,17 +1,35 @@
 package main
 
 import (
-	_ "fmt"
-	_ "github.com/jtb87/config"
+	"fmt"
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
 )
 
 func main() {
+	fmt.Println()
 	app := App{}
-	app.Init("test_db", "test", "inject")
-	defer app.DB.Close()
-	// conf, err := config.LoadConfiguration("config.json")
+	// initialize router
+	app.NewRouter()
+	fmt.Println("server initialized")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
 	app.Run()
+}
+
+type App struct {
+	// DB     *sqlx.DB
+	Router *mux.Router
+}
+
+func (a *App) Run() {
+	log.Fatal(http.ListenAndServe(":9090", a.Router))
+}
+
+// add server configs
+type serverConfig struct {
+	timeouts     string
+	otherconfigs string
 }
