@@ -14,5 +14,5 @@
 
 # dev files and Misc:
 *.txt
-
 config.json
+/tmp

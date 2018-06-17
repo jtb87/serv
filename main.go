@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -12,11 +13,10 @@ func main() {
 	app := App{}
 	// initialize router
 	app.NewRouter()
-	fmt.Println("server initialized")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	initPhoneBook()
+	fmt.Println("server initialized on port")
 	app.Run()
+
 }
 
 type App struct {
@@ -24,12 +24,12 @@ type App struct {
 	Router *mux.Router
 }
 
+// Run starts initializes the application
 func (a *App) Run() {
-	log.Fatal(http.ListenAndServe(":9090", a.Router))
-}
-
-// add server configs
-type serverConfig struct {
-	timeouts     string
-	otherconfigs string
+	s := &http.Server{
+		Addr:           ":9090",
+		Handler:        http.TimeoutHandler(a.Router, time.Second*10, "Timeout!"),
+		MaxHeaderBytes: 1 << 20,
+	}
+	log.Fatal(s.ListenAndServe())
 }

@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJSON(w, code, map[string]string{"error": message})
+func respondWithError(w http.ResponseWriter, message string) {
+	respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": message})
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {

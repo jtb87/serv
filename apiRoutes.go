@@ -1,28 +1,28 @@
 package main
 
 import (
-	"net/http"
+	"github.com/gorilla/mux"
+	_ "log"
+	_ "net/http"
 )
 
-type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
+// InitializeRoutes defines the routes for the piricing api
+func (a *App) InitializeRoutes() {
+	api := a.Router.PathPrefix("/api").Subrouter()
+	api.HandleFunc("/entry", a.allEntries).Methods("GET")
+	api.HandleFunc("/entry", a.addEntry).Methods("POST")
+	api.HandleFunc("/entry", a.editEntry).Methods("PUT")
+	api.HandleFunc("/entry/{email}", a.viewEntry).Methods("GET")
+	// api.HandleFunc("/entry", a.deleteEntry).Methods("DELETE")
 }
 
-type Routes []Route
+// NewRouter created a new mux.router and initializes the routes
+func (a *App) NewRouter() {
+	a.Router = mux.NewRouter().StrictSlash(true)
+	a.InitializeRoutes()
+}
 
-var routes = Routes{
-	Route{
-		"Index",
-		"GET",
-		"/",
-		Index,
-	},
-	Route{
-		"User",
-		"GET",
-		"/user",
-		UserHandler,
-	}}
+// write headers
+// w.Header().Set("Content-Type", "application/json")
+// w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+// w.WriteHeader(http.StatusOK)
