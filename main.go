@@ -1,35 +1,43 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
 
 func main() {
-	fmt.Println()
-	app := App{}
+	app := App{
+		DB: make(map[string]PhoneBookEntry),
+	}
 	// initialize router
 	app.NewRouter()
-	initPhoneBook()
-	fmt.Println("server initialized on port")
+	// initialize log
+	initLog()
+	// seed database
+	app.initPhoneBook()
+	log.Info("server started")
 	app.Run()
-
 }
 
 type App struct {
-	// DB     *sqlx.DB
+	DB     map[string]PhoneBookEntry
 	Router *mux.Router
 }
 
-// Run starts initializes the application
+type PhoneBookEntry struct {
+	Firstname   string `json:"firstname"`
+	Lastname    string `json:"lastname"`
+	Email       string `json:"email"`
+	Phonenumber string `json:"phonenumber"`
+}
+
+// Run starts the server
 func (a *App) Run() {
 	s := &http.Server{
-		Addr:           ":9090",
-		Handler:        http.TimeoutHandler(a.Router, time.Second*10, "Timeout!"),
-		MaxHeaderBytes: 1 << 20,
+		Addr:    ":9090",
+		Handler: logRequest(http.TimeoutHandler(a.Router, time.Second*10, "Timeout!")),
 	}
 	log.Fatal(s.ListenAndServe())
 }
