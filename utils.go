@@ -19,44 +19,13 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-// logging request middleware
-func logRequest(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		lrw := NewLoggingResponseWriter(w)
-		handler.ServeHTTP(lrw, r)
-		log.WithFields(log.Fields{
-			"path":   r.URL.Path,
-			"method": r.Method,
-			"status": lrw.statusCode,
-		}).Info("http-request")
-
-	})
-}
-
-// LoggingResponseWriter stores the status code http requests
-type LoggingResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-// NewLoggingResponseWriter logs a http request to the logfiles
-func NewLoggingResponseWriter(w http.ResponseWriter) *LoggingResponseWriter {
-	return &LoggingResponseWriter{w, http.StatusOK}
-}
-
-// WriteHeader
-func (lrw *LoggingResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
-}
-
 func initLog() {
 	log.SetFormatter(&log.JSONFormatter{})
-	file, err := os.OpenFile("phonebook.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Info("Failed to log to file! using default stderr")
-	}
-	log.SetOutput(file)
+	// file, err := os.OpenFile("phonebook.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	log.Info("Failed to log to file! using default stderr")
+	// }
+	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 }
 

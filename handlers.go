@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // viewEntry returns single entry based on parameter in url
@@ -86,4 +87,18 @@ func (a *App) allEntries(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	respondWithJSON(w, http.StatusOK, pB)
+}
+
+// debugging
+
+func (a *App) healthy(w http.ResponseWriter, r *http.Request) {
+	// checks if search parameter exists and searches through database
+	respondWithJSON(w, http.StatusOK, "ok")
+}
+
+func (a *App) unhealthy(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("start")
+	time.Sleep(time.Second * 6)
+	fmt.Println("end")
+	respondWithJSON(w, http.StatusOK, "not ok")
 }
