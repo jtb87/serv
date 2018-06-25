@@ -19,8 +19,10 @@ func main() {
 	initLog()
 	// seed database
 	app.initPhoneBook()
+	addr := ":9090"
 	log.Info("server started")
-	app.Run()
+	log.Printf("server started on: http://localhost%s", addr)
+	app.Run(addr)
 }
 
 type App struct {
@@ -36,12 +38,12 @@ type PhoneBookEntry struct {
 }
 
 // Run starts the server
-func (a *App) Run() {
+func (a *App) Run(addr string) {
 	s := &http.Server{
-		Addr:         ":9090",
+		Addr:         addr,
 		Handler:      http.TimeoutHandler(a.Router, time.Second*10, "timeout"),
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 	log.Fatal(s.ListenAndServe())

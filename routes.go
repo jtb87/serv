@@ -24,7 +24,14 @@ func (a *App) InitializeRoutes() {
 func (a *App) NewRouter() {
 	a.Router = mux.NewRouter().StrictSlash(true)
 	a.InitializeRoutes()
+	a.InitExperimental()
 	a.Router.Use(logRequest)
+
+}
+
+func (a *App) InitExperimental() {
+	exp := a.Router.PathPrefix("/exp").Subrouter()
+	exp.HandleFunc("/select", a.selectHandler).Methods("GET")
 
 }
 
