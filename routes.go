@@ -29,12 +29,6 @@ func (a *App) NewRouter() {
 
 }
 
-func (a *App) InitExperimental() {
-	exp := a.Router.PathPrefix("/exp").Subrouter()
-	exp.HandleFunc("/select", a.selectHandler).Methods("GET")
-
-}
-
 // logging request middleware
 func logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
