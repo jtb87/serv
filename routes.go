@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// InitializeRoutes defines the routes for the piricing api
+// InitializeRoutes defines the routes for the phonebook
 func (a *App) InitializeRoutes() {
 	api := a.Router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/entry", a.allEntries).Queries("search", "{search}")

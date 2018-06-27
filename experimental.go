@@ -3,15 +3,42 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 )
 
+// still todo -- Authentication on specific routes
+// test with middleware -- first class functions
 func (a *App) InitExperimental() {
 	exp := a.Router.PathPrefix("/exp").Subrouter()
 	exp.HandleFunc("/select", a.selectHandler).Methods("GET")
 	exp.HandleFunc("/context", a.contextHandler).Methods("GET")
 	exp.HandleFunc("/interface", a.interfaceHandler).Methods("GET")
+	exp.HandleFunc("/mutex", a.mutexHandler).Methods("GET")
+}
 
+func (a *App) mutexHandler(w http.ResponseWriter, r *http.Request) {
+	var mutex = sync.Mutex{}
+
+	val := 0
+	go func() {
+		mutex.Lock()
+		// time.Sleep(time.Second * 3 )
+		fmt.Println(val)
+		val += 100
+		mutex.Unlock()
+	}()
+	go func() {
+		mutex.Lock()
+		fmt.Println(val)
+		val += 1000
+		mutex.Unlock()
+	}()
+	fmt.Println(val)
+	time.Sleep(time.Second)
+	fmt.Println(val)
+	fmt.Println("call to mutex")
+	respondWithJSON(w, 200, "mutex workings")
 }
 
 func (a *App) selectHandler(w http.ResponseWriter, r *http.Request) {

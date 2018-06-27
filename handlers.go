@@ -89,8 +89,6 @@ func (a *App) allEntries(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, pB)
 }
 
-// debugging
-
 func (a *App) healthy(w http.ResponseWriter, r *http.Request) {
 	// checks if search parameter exists and searches through database
 	respondWithJSON(w, http.StatusOK, "ok")
