@@ -1,20 +1,57 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	// "io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
 
 // still todo -- Authentication on specific routes
 // test with middleware -- first class functions
+// file uploading
+
 func (a *App) InitExperimental() {
 	exp := a.Router.PathPrefix("/exp").Subrouter()
 	exp.HandleFunc("/select", a.selectHandler).Methods("GET")
 	exp.HandleFunc("/context", a.contextHandler).Methods("GET")
 	exp.HandleFunc("/interface", a.interfaceHandler).Methods("GET")
 	exp.HandleFunc("/mutex", a.mutexHandler).Methods("GET")
+	exp.HandleFunc("/file", a.fileUploadHandler).Methods("POST")
+}
+
+type Upload struct {
+	Name    string
+	Content []byte
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
+func (a *App) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	v := Upload{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&v); err != nil {
+		fmt.Println(err)
+		respondWithError(w, "Invalid request payload")
+		return
+	}
+	filename := fmt.Sprintf("./tmp/%s", v.Name)
+	f, err := os.Create(filename)
+	if err != nil {
+		fmt.Println(err)
+		respondWithError(w, "Could not save image")
+		return
+	}
+	defer f.Close()
+	f.Write(v.Content)
+	respondWithJSON(w, 200, "file upload succesfull")
 }
 
 func (a *App) mutexHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +124,8 @@ func (a *App) contextHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) interfaceHandler(w http.ResponseWriter, r *http.Request) {
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	v := type1{
 		"Gregorius",
 	}

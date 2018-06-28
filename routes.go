@@ -25,8 +25,8 @@ func (a *App) NewRouter() {
 	a.Router = mux.NewRouter().StrictSlash(true)
 	a.InitializeRoutes()
 	a.InitExperimental()
-	a.Router.Use(logRequest)
 
+	a.Router.Use(logRequest)
 }
 
 // logging request middleware
