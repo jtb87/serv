@@ -21,6 +21,20 @@ func (a *App) InitExperimental() {
 	exp.HandleFunc("/interface", a.interfaceHandler).Methods("GET")
 	exp.HandleFunc("/mutex", a.mutexHandler).Methods("GET")
 	exp.HandleFunc("/file", a.fileUploadHandler).Methods("POST")
+	exp.HandleFunc("/jsoninterface", a.jsonInterface).Methods("POST")
+}
+
+func (a *App) jsonInterface(w http.ResponseWriter, r *http.Request) {
+
+	var v map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&v); err != nil {
+		fmt.Println(err)
+		respondWithError(w, "Invalid request payload")
+		return
+	}
+	fmt.Println(v)
+	respondWithJSON(w, 200, "json received and printed")
 }
 
 type Upload struct {
@@ -28,13 +42,7 @@ type Upload struct {
 	Content []byte
 }
 
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-}
-
 func (a *App) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	v := Upload{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&v); err != nil {
