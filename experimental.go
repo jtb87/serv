@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	// "io/ioutil"
+	"encoding/base64"
+	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -22,10 +26,48 @@ func (a *App) InitExperimental() {
 	exp.HandleFunc("/mutex", a.mutexHandler).Methods("GET")
 	exp.HandleFunc("/file", a.fileUploadHandler).Methods("POST")
 	exp.HandleFunc("/jsoninterface", a.jsonInterface).Methods("POST")
+	exp.HandleFunc("/randompicture", a.randomPicture).Methods("GET")
+}
+
+func (a *App) randomPicture(w http.ResponseWriter, r *http.Request) {
+	wd, _ := os.Getwd()
+	wd = wd + "/tmp"
+	wdt, err := os.Open(wd)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer wdt.Close()
+	rdir, err := wdt.Readdir(0)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var filelist []string
+	for _, f := range rdir {
+		if strings.HasSuffix(f.Name(), ".png") {
+			filelist = append(filelist, f.Name())
+
+		}
+	}
+	if len(filelist) == 0 {
+		respondWithError(w, "no files")
+		return
+	}
+
+	rand.Seed(time.Now().Unix())
+	file := filelist[rand.Intn(len(filelist))]
+	filename := wd + "/" + file
+	img, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+	enc := base64.StdEncoding
+	b64 := enc.EncodeToString(img)
+	data := fmt.Sprintf("data:image/png;base64,%s", b64) // b := byte[]
+	bod := map[string]string{"imgname": file, "img": data}
+	respondWithJSON(w, 200, bod)
 }
 
 func (a *App) jsonInterface(w http.ResponseWriter, r *http.Request) {
-
 	var v map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&v); err != nil {
@@ -33,6 +75,7 @@ func (a *App) jsonInterface(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, "Invalid request payload")
 		return
 	}
+
 	fmt.Println(v)
 	respondWithJSON(w, 200, "json received and printed")
 }
