@@ -1,10 +1,14 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	// "io/ioutil"
-	"encoding/base64"
+	draw2 "golang.org/x/image/draw"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/png"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -14,12 +18,9 @@ import (
 	"time"
 )
 
-// still todo -- Authentication on specific routes
-// test with middleware -- first class functions
-// file uploading
-
 func (a *App) InitExperimental() {
 	exp := a.Router.PathPrefix("/exp").Subrouter()
+	// exp.Use(authMiddleWareJWT)
 	exp.HandleFunc("/select", a.selectHandler).Methods("GET")
 	exp.HandleFunc("/context", a.contextHandler).Methods("GET")
 	exp.HandleFunc("/interface", a.interfaceHandler).Methods("GET")
@@ -27,6 +28,71 @@ func (a *App) InitExperimental() {
 	exp.HandleFunc("/file", a.fileUploadHandler).Methods("POST")
 	exp.HandleFunc("/jsoninterface", a.jsonInterface).Methods("POST")
 	exp.HandleFunc("/randompicture", a.randomPicture).Methods("GET")
+	exp.HandleFunc("/logocombine", a.logoCombine).Methods("GET")
+	exp.HandleFunc("textmessage", a.textMessage).Methods("POST")
+
+}
+
+func (a *App) textMessage(w http.ResponseWriter, r *http.Request) {
+	var v map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&v); err != nil {
+		fmt.Println(err)
+		respondWithError(w, "Invalid request payload")
+		return
+	}
+
+	fmt.Println(v)
+	respondWithJSON(w, 200, "json received and printed")
+}
+
+// logging request middleware
+func authMiddleWareJWT(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Auth") != "testingKey" {
+			respondWithJSON(w, 401, "[forbidden]")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *App) logoCombine(w http.ResponseWriter, r *http.Request) {
+	wd, _ := os.Getwd()
+	filename := wd + "/img/monk_logo.png"
+	img, err := os.Open(filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer img.Close()
+	pngImage, err := png.Decode(img)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Scale down by a factor of 3.
+	sb := pngImage.Bounds()
+	dst := image.NewRGBA(image.Rect(0, 0, sb.Dx()/3, sb.Dy()/3))
+	draw2.BiLinear.Scale(dst, dst.Bounds(), pngImage, sb, draw.Over, nil)
+
+	m := image.NewRGBA(pngImage.Bounds())
+	transp := color.RGBA{100, 255, 200, 255}
+	n := m.Bounds().Max.X - dst.Bounds().Max.X
+	p := image.Rect(667, 0, (sb.Dx()/3 + 667), sb.Dy()/3)
+
+	fmt.Println(n)
+	draw.Draw(m, m.Bounds(), &image.Uniform{transp}, image.ZP, draw.Src)
+	draw.Draw(m, p, dst, image.ZP, draw.Over)
+	out, err := os.Create(wd + "/img/converted_image.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = png.Encode(out, m)
+	if err != nil {
+		fmt.Println(err)
+	}
+	respondWithJSON(w, 200, "all good!")
+
 }
 
 func (a *App) randomPicture(w http.ResponseWriter, r *http.Request) {
