@@ -25,7 +25,7 @@ func (a *App) NewRouter() {
 	a.Router = mux.NewRouter().StrictSlash(true)
 	a.InitializeRoutes()
 	a.InitExperimental()
-
+	a.InitExperimental2()
 	a.Router.Use(logRequest)
 }
 
