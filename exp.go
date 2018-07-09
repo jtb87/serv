@@ -41,7 +41,6 @@ func (a *App) encoding(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\n")
 
 	fmt.Printf("%v \n", placeOfInterest)
-
 	fmt.Printf("hex bytes: ")
 	for i := 0; i < len(placeOfInterest); i++ {
 		fmt.Printf("%x ", placeOfInterest[i])
