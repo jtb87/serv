@@ -26,6 +26,7 @@ func (a *App) NewRouter() {
 	a.InitializeRoutes()
 	a.InitExperimental()
 	a.InitExperimental2()
+	a.InitExperimental3()
 	a.Router.Use(logRequest)
 }
 
