@@ -4,7 +4,11 @@ import (
 	_ "encoding/hex"
 	"fmt"
 	"net/http"
+	"unicode/utf16"
 )
+
+const maxLengthUCS2 = 70
+const maxLengthMessage = 67
 
 func (a *App) InitExperimental2() {
 	exp := a.Router.PathPrefix("/exp2").Subrouter()
@@ -12,47 +16,51 @@ func (a *App) InitExperimental2() {
 	exp.HandleFunc("/encoding", a.encoding).Methods("GET")
 }
 
+type M struct {
+	body string
+}
+
 func (a *App) encoding(w http.ResponseWriter, r *http.Request) {
 	// s := "The message to be sent"
+	s := "??????????????????????????????????????????????????????????????????1?????"
 	// b := []byte(s)
-	b := []byte("2") //0x30
-	// src := []byte(s)
-	// dst := make([]byte, hex.EncodedLen(len(src)))
-	// hex.Encode(dst, src)
-	fmt.Println(b)
-	fmt.Printf("bytes %s \n", b)
-	fmt.Printf("bytes %x \n", b)
-
-	// bin := "546865206d65737361676520746f2062652073656e74"
-	// dst2 := fmt.Sprintf("%s", dst)
-	// if dst2 == bin {
-	// 	fmt.Println("True they are equal")
-	// }
-	// fmt.Printf("dst print: %x\n", dst)
-	// fmt.Printf("values: %v\n", dst)
-	const placeOfInterest = `2`
-
-	fmt.Printf("plain string: ")
-	fmt.Printf("%s", placeOfInterest)
-	fmt.Printf("\n")
-
-	fmt.Printf("quoted string: ")
-	fmt.Printf("%+q", placeOfInterest)
-	fmt.Printf("\n")
-
-	fmt.Printf("%v \n", placeOfInterest)
-
-	fmt.Printf("hex bytes: ")
-	for i := 0; i < len(placeOfInterest); i++ {
-		fmt.Printf("%x ", placeOfInterest[i])
+	var mL []M
+	runes := utf16.Encode([]rune(s))
+	if len(runes) > maxLengthUCS2 {
+		nstop := len(runes) / maxLengthMessage
+		if len(runes)%maxLengthMessage > 0 {
+			nstop++
+		}
+		for n := 0; n < nstop; n++ {
+			var stop int
+			if len(runes) > maxLengthMessage {
+				stop = maxLengthMessage
+			} else {
+				stop = len(runes)
+			}
+			m := M{
+				body: UCS2ToHex(runes[:stop]),
+			}
+			mL = append(mL, m)
+			runes = runes[stop:]
+		}
+	} else {
+		m := M{
+			body: UCS2ToHex(runes),
+		}
+		mL = append(mL, m)
 	}
-	fmt.Printf("\n")
-
+	fmt.Println(mL)
+	for _, v := range mL {
+		fmt.Println(v.body)
+	}
 	respondWithJSON(w, 200, "json received and printed")
 }
 
-// %s	the uninterpreted bytes of the string or slice
-// %q	a double-quoted string safely escaped with Go syntax
-// %x	base 16, lower-case, two characters per byte
-// %X	base 16, upper-case, two characters per byte
-// 0x1B 0x1B
+func UCS2ToHex(s []uint16) string {
+	h := ""
+	for _, a := range s {
+		h += fmt.Sprintf("%04x", a)
+	}
+	return h
+}
