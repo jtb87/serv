@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,5 +26,14 @@ func TestGSM(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
+}
 
+func TestIsValid(t *testing.T) {
+	s := Str{
+		Message: "}aaa{a",
+	}
+	s.IsValidGSM()
+	m := SplitMessage(s)
+
+	fmt.Printf("%+v \n", m)
 }

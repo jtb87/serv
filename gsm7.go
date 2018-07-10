@@ -18,34 +18,98 @@ func (a *App) InitExperimental3() {
 
 func (a *App) utftogsm(w http.ResponseWriter, r *http.Request) {
 	// s := "@"
-	s := "}"
-	fmt.Println(IsValidGSM(s))
-
+	// s := "}"
+	// fmt.Println(IsValidGSM(s))
 	respondWithJSON(w, 200, "sure")
-
 }
 
-func IsValidGSM(text string) (bool, int) {
-	var tot int
-	// var str []string
-	var str string
-	for _, r := range text {
-		v, ok := baseGSM7[r]
+func (s *Str) IsValidGSM() {
+	for _, r := range s.Message {
+		_, ok := baseGSM7[r]
 		if ok {
-			str += fmt.Sprintf("%x", v)
-			tot++
+			s.MessageLength++
 		} else {
-			v, ok = extendedGSM7[r]
+			_, ok = extendedGSM7[r]
 			if ok {
-				str += fmt.Sprintf("%x%x", esc, v)
-				tot += 2
+				s.MessageLength += 2
 			} else {
-				return false, tot
+				s.Type = "unicode"
+				s.MessageLength = len(s.Message)
 			}
 		}
 	}
-	fmt.Println(str)
-	return true, tot
+	s.Type = "plain"
+}
+
+type Str struct {
+	Message        string
+	Type           string
+	MessageLength  int
+	MaxLength      int
+	SplitMaxLength int
+}
+
+type Message struct {
+	Message string
+	UDH     string
+}
+
+// func (s  *Str) TypeSetter {
+// 	s.Message
+// }
+
+// type Messager interface {
+// 	Message string
+// }
+
+const TotalCharsUnicode = 3
+const TotalCharsGSM = 6
+const MaxLengthGSM = 10
+const MaxLengthUnicode = 10
+
+func SplitMessage(text string) []Str {
+	s := "plain"
+	var tot int
+	str := Str{}
+	var strList []Str
+	switch {
+	case s == "plain":
+		for _, r := range text {
+			if _, ok := extendedGSM7[r]; ok {
+				if tot >= 4 {
+					strList = append(strList, str)
+					str = Str{}
+					tot = 0
+				}
+				str.Message += fmt.Sprintf("%x", r)
+				fmt.Printf("%x \n", r)
+				tot += 2
+			} else {
+				str.Message += fmt.Sprintf("%x", r)
+				tot++
+			}
+			if tot == 5 {
+				strList = append(strList, str)
+				str = Str{}
+				tot = 0
+			}
+		}
+	case s == "unicode":
+		for _, r := range text {
+			str.Message += fmt.Sprintf("%x", r)
+			tot++
+		}
+		if tot == 5 {
+			strList = append(strList, str)
+			str = Str{}
+			tot = 0
+		}
+	}
+	// Add LeftOver Message to list if not empty
+	if str.Message != "" {
+		strList = append(strList, str)
+	}
+	return strList
 }
 
 const esc byte = 0x1B
