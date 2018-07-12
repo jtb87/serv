@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,12 +27,12 @@ func TestGSM(t *testing.T) {
 	}
 }
 
-func TestIsValid(t *testing.T) {
-	s := Str{
-		Message: "}aaa{a",
-	}
-	s.IsValidGSM()
-	m := SplitMessage(s)
+// func TestIsValid(t *testing.T) {
+// 	s := Str{
+// 		Message: "}aaa{a",
+// 	}
+// 	s.IsValidGSM()
+// 	m := SplitMessage(s)
 
-	fmt.Printf("%+v \n", m)
-}
+// 	fmt.Printf("%+v \n", m)
+// }
