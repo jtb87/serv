@@ -37,8 +37,7 @@ func logRequest(next http.Handler) http.Handler {
 			"path":   r.URL.Path,
 			"method": r.Method,
 			// "status": lrw.statusCode,
-		}).Info("http-request")
-		// lrw := NewLoggingResponseWriter(w)
+		}).Info("http-request") // lrw := NewLoggingResponseWriter(w)
 		// call next function/ middleware
 		next.ServeHTTP(w, r)
 	})

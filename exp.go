@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"unicode/utf16"
@@ -14,6 +15,8 @@ func (a *App) InitExperimental2() {
 	exp := a.Router.PathPrefix("/exp2").Subrouter()
 	// exp.Use(authMiddleWareJWT)
 	exp.HandleFunc("/encoding", a.encoding).Methods("GET")
+	exp.HandleFunc("/floattest", a.floatTest).Methods("POST")
+
 }
 
 type M struct {
@@ -67,4 +70,23 @@ func UCS2ToHex(s []uint16) string {
 		h += fmt.Sprintf("%04x", a)
 	}
 	return h
+}
+
+type Num struct {
+	X int     `json:"x,string"`
+	Y float64 `json:"y,string"`
+}
+
+// addEntry will add a new entry to the a.DB if the key does not exist yet, returns the referenceId
+func (a *App) floatTest(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	p := Num{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&p); err != nil {
+		respondWithError(w, "Invalid request payload")
+		return
+	}
+	ap := p.Y + 1
+
+	respondWithJSON(w, http.StatusCreated, ap)
 }
