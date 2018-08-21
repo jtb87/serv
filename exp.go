@@ -8,6 +8,7 @@ import (
 	"unicode/utf16"
 )
 
+//test comments etc
 const maxLengthUCS2 = 70
 const maxLengthMessage = 67
 
