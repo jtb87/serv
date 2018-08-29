@@ -19,6 +19,20 @@ func main() {
 	app.NewRouter()
 	// initialize log
 	initLog()
+
+	d := dbStore{
+		db: make(map[int]Todo),
+	}
+	InitStore(d)
+
+	// db2.db[1] = Todo{
+	// 	Id:          1,
+	// 	Completed:   false,
+	// 	Subject:     "working store",
+	// 	DateCreated: "Today",
+	// 	Tag:         "DEV",
+	// }
+
 	// seed database
 	app.initPhoneBook()
 	addr := ":9090"

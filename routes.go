@@ -27,6 +27,7 @@ func (a *App) NewRouter() {
 	a.InitExperimental()
 	a.InitExperimental2()
 	a.InitExperimental3()
+	a.initDatabase()
 	a.Router.Use(logRequest)
 }
 
