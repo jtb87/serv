@@ -23,7 +23,7 @@ func main() {
 	d := dbStore{
 		db: make(map[int]Todo),
 	}
-	InitStore(d)
+	InitStore(&d)
 
 	// db2.db[1] = Todo{
 	// 	Id:          1,

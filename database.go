@@ -24,7 +24,7 @@ func InitStore(s Store) {
 // }
 
 type Store interface {
-	TodoGetter() []*Todo
+	TodoGetter() []Todo
 	// TodoPoster()
 }
 
@@ -40,14 +40,14 @@ type Todo struct {
 	Tag         string `json:"tag"`
 }
 
-func (d *dbStore) TodoGetter() []*Todo {
+func (d *dbStore) TodoGetter() []Todo {
 	fmt.Println("so far .. ")
 	var b []Todo
 	for _, v := range d.db {
 		fmt.Println(v)
 		b = append(b, v)
 	}
-	return *b
+	return b
 }
 
 func (a *App) TodoGetter(w http.ResponseWriter, r *http.Request) {

@@ -29,21 +29,24 @@ func (a *App) InitExperimental() {
 	exp.HandleFunc("/jsoninterface", a.jsonInterface).Methods("POST")
 	exp.HandleFunc("/randompicture", a.randomPicture).Methods("GET")
 	exp.HandleFunc("/logocombine", a.logoCombine).Methods("GET")
-	exp.HandleFunc("textmessage", a.textMessage).Methods("POST")
+	exp.HandleFunc("/params", a.textMessage).Methods("POST")
 
 }
 
 func (a *App) textMessage(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	fmt.Println(params)
 	var v map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 	if err := decoder.Decode(&v); err != nil {
 		fmt.Println(err)
 		respondWithError(w, "Invalid request payload")
 		return
 	}
-
+	v["params"] = params
 	fmt.Println(v)
-	respondWithJSON(w, 200, "json received and printed")
+	respondWithJSON(w, 200, v)
 }
 
 // logging request middleware
